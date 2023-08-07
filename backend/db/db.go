@@ -28,7 +28,6 @@ func Migrate() {
 	}
 	m, err := migrate.NewWithDatabaseInstance("file://./migrations", "postgres", driver)
 	if err != nil {
-		log.Println(err)
 		log.Fatalf("Failed to create migration instance")
 	}
 	err = m.Up()

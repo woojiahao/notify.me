@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/woojiahao/notify.me/db"
 	"github.com/woojiahao/notify.me/forms"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -15,21 +16,57 @@ type User struct {
 
 func (u User) Register(registerPayload forms.UserRegister) (*User, error) {
 	conn := db.GetDB()
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(registerPayload.Password), 13)
+	if err != nil {
+		// TODO: Handle as internal server error
+		return nil, errors.New("unable to generate password hash")
+	}
 	rows, err := conn.Query(
 		"INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING *",
 		registerPayload.Name,
 		registerPayload.Email,
-		registerPayload.Password,
+		passwordHash,
 	)
 	if err != nil {
+		// TODO: Handle as invalid request error
 		return nil, errors.New("failed to register user")
 	}
 
 	var user User
 	err = rows.Scan(&user.ID, &user.Name, &user.Email, &user.PasswordHash)
 	if err != nil {
-		return nil, errors.New("cannot find row")
+		return nil, errors.New("cannot parse row")
 	}
 
+	return &user, nil
+}
+
+func (u User) Login(loginPayload forms.UserLogin) (*User, error) {
+	user, err := u.FindByEmail(loginPayload.Email)
+	if err != nil {
+		// TODO: Handle this as 404
+		return nil, errors.New("user not found")
+	}
+
+	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(loginPayload.Password)) != nil {
+		return user, nil
+	} else {
+		// TODO: Handle this as invalid request
+		return nil, errors.New("invalid password")
+	}
+}
+
+func (u User) FindByEmail(email string) (*User, error) {
+	conn := db.GetDB()
+	row := conn.QueryRow("SELECT * FROM users WHERE email = $1", email)
+	if row == nil {
+		return nil, errors.New("no user with email")
+	}
+
+	var user User
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.PasswordHash)
+	if err != nil {
+		return nil, errors.New("cannot parse row")
+	}
 	return &user, nil
 }
