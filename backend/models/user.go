@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"github.com/woojiahao/notify.me/db"
 	"github.com/woojiahao/notify.me/forms"
 	"golang.org/x/crypto/bcrypt"
@@ -11,7 +12,7 @@ type User struct {
 	ID           string `json:"id,omitempty"`
 	Name         string `json:"name"`
 	Email        string `json:"email"`
-	PasswordHash string `json:"password_hash"`
+	PasswordHash string `json:"-"`
 }
 
 func (u User) Register(registerPayload forms.UserRegister) (*User, error) {
@@ -33,9 +34,12 @@ func (u User) Register(registerPayload forms.UserRegister) (*User, error) {
 	}
 
 	var user User
+	if !rows.Next() {
+		return nil, errors.New("cannot parse row")
+	}
 	err = rows.Scan(&user.ID, &user.Name, &user.Email, &user.PasswordHash)
 	if err != nil {
-		return nil, errors.New("cannot parse row")
+		return nil, errors.New("cannot scan")
 	}
 
 	return &user, nil
@@ -48,9 +52,10 @@ func (u User) Login(loginPayload forms.UserLogin) (*User, error) {
 		return nil, errors.New("user not found")
 	}
 
-	if bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(loginPayload.Password)) != nil {
+	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(loginPayload.Password)); err == nil {
 		return user, nil
 	} else {
+		fmt.Println(err)
 		// TODO: Handle this as invalid request
 		return nil, errors.New("invalid password")
 	}

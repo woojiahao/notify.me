@@ -30,10 +30,7 @@ func Migrate() {
 	if err != nil {
 		log.Fatalf("Failed to create migration instance")
 	}
-	err = m.Up()
-	if err != nil {
-		log.Fatalf("Failed to migrate")
-	}
+	_ = m.Up()
 }
 
 func GetDB() *sql.DB {
