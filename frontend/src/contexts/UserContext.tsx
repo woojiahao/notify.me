@@ -16,7 +16,7 @@ interface UserContextInterface {
   refreshToken: token;
   user: User;
   login: (email: string, password: string) => Promise<number>;
-  register: (email: string, password: string) => Promise<number>;
+  register: (name: string, email: string, password: string) => Promise<number>;
   logout: () => void;
 }
 
@@ -85,19 +85,23 @@ export function UserProvider({ children }: React.PropsWithChildren) {
     }
   }, []);
 
-  const register = useCallback(async (email: string, password: string) => {
-    try {
-      const response = await api.post("/user/register", {
-        email: email,
-        password: password,
-      });
-      return response.status;
-    } catch (e) {
-      const error = e as AxiosError;
-      if (!error.response) return 500;
-      return error.response.status;
-    }
-  }, []);
+  const register = useCallback(
+    async (name: string, email: string, password: string) => {
+      try {
+        const response = await api.post("/user/register", {
+          name: name,
+          email: email,
+          password: password,
+        });
+        return response.status;
+      } catch (e) {
+        const error = e as AxiosError;
+        if (!error.response) return 500;
+        return error.response.status;
+      }
+    },
+    []
+  );
 
   const logout = useCallback(async () => {
     localStorage.removeItem("access_token");

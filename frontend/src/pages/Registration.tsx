@@ -1,27 +1,32 @@
 import { FormEvent, useState } from "react";
 import { useUserContext } from "../contexts/UserContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-export default function Login() {
-  const { login } = useUserContext();
-  const navigate = useNavigate();
+export default function Registration() {
+  const { register } = useUserContext();
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     const target = e.target as typeof e.target & {
+      nameInput: { value: string };
       emailInput: { value: string };
       passwordInput: { value: string };
     };
 
-    const status = await login(
+    const status = await register(
+      target.nameInput.value,
       target.emailInput.value,
       target.passwordInput.value
     );
-    if (status === 200) navigate("/");
+    if (status === 201)
+      setSuccess(
+        `Welcome ${target.nameInput.value}! Login with your new account`
+      );
     else if (status === 400)
-      setError("Login failed. Check your email/password and try again.");
+      setError("Registration failed. Check the email/password.");
     else
       setError("Something wrong happened on our end, we are looking into it.");
   }
@@ -29,11 +34,17 @@ export default function Login() {
   return (
     <div className="w-[40%] my-16 mx-auto">
       <p className="mb-2 text-gray-500">notify.me</p>
-      <h1 className="uppercase mb-4">Login</h1>
+      <h1 className="uppercase mb-4">Register</h1>
 
       {error && (
         <p className="p-4 bg-red-200 rounded-md border-2 border-red-400 mb-4 shadow-md">
           {error}
+        </p>
+      )}
+
+      {success && (
+        <p className="p-4 bg-green-200 rounded-md border-2 border-green-400 mb-4 shadow-md">
+          {success}
         </p>
       )}
 
@@ -42,6 +53,16 @@ export default function Login() {
         onSubmit={onSubmit}
         className="p-4 bg-white rounded-md shadow-md flex flex-col gap-y-8"
       >
+        <div className="flex flex-col">
+          <label htmlFor="nameInput">Name</label>
+          <input
+            id="nameInput"
+            type="text"
+            className="border rounded-md p-2 text-gray-500"
+            required
+          />
+        </div>
+
         <div className="flex flex-col">
           <label htmlFor="emailInput">Email</label>
           <input
@@ -63,13 +84,13 @@ export default function Login() {
         </div>
 
         <button type="submit" className="p-2 bg-aquamarine rounded-md">
-          Login
+          Register
         </button>
 
         <div className="flex flex-row justify-between items-center">
-          <span>No account?</span>
-          <Link to="/register" className="p-2 px-4 bg-blue-100 rounded-md">
-            Register
+          <span>Got an account?</span>
+          <Link to="/login" className="p-2 px-4 bg-blue-100 rounded-md">
+            Login
           </Link>
         </div>
       </form>
