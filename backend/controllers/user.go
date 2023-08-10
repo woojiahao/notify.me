@@ -6,6 +6,7 @@ import (
 	"github.com/woojiahao/notify.me/config"
 	"github.com/woojiahao/notify.me/forms"
 	"github.com/woojiahao/notify.me/models"
+	"net/http"
 	"time"
 )
 
@@ -16,17 +17,19 @@ var userModel = new(models.User)
 func (u UserController) Register(c *gin.Context) {
 	var registerPayload forms.UserRegister
 	if err := c.Bind(&registerPayload); err != nil {
-		c.JSON(400, gin.H{
-			"error": "Invalid request",
-		})
+		c.Status(http.StatusBadRequest)
+		_ = c.Error(err)
 		return
 	}
 
 	_, err := userModel.Register(registerPayload)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"error": "Internal server error",
-		})
+		status := http.StatusInternalServerError
+		if err == models.RegistrationEmailUsed {
+			status = http.StatusBadRequest
+		}
+		c.Status(status)
+		_ = c.Error(err)
 		return
 	}
 

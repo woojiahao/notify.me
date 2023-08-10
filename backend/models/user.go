@@ -15,12 +15,19 @@ type User struct {
 	PasswordHash string `json:"-"`
 }
 
+var (
+	UserNotFound               = errors.New("user not found")
+	PasswordHashGenerationFail = errors.New("failed to generate password hash")
+	RegistrationEmailUsed      = errors.New("email in use already")
+	UserParseError             = errors.New("failed to parse row")
+)
+
 func (u User) Register(registerPayload forms.UserRegister) (*User, error) {
 	conn := db.GetDB()
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(registerPayload.Password), 13)
 	if err != nil {
 		// TODO: Handle as internal server error
-		return nil, errors.New("unable to generate password hash")
+		return nil, PasswordHashGenerationFail
 	}
 	rows, err := conn.Query(
 		"INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3) RETURNING *",
@@ -30,16 +37,16 @@ func (u User) Register(registerPayload forms.UserRegister) (*User, error) {
 	)
 	if err != nil {
 		// TODO: Handle as invalid request error
-		return nil, errors.New("failed to register user")
+		return nil, RegistrationEmailUsed
 	}
 
 	var user User
 	if !rows.Next() {
-		return nil, errors.New("cannot parse row")
+		return nil, UserParseError
 	}
 	err = rows.Scan(&user.ID, &user.Name, &user.Email, &user.PasswordHash)
 	if err != nil {
-		return nil, errors.New("cannot scan")
+		return nil, UserParseError
 	}
 
 	return &user, nil

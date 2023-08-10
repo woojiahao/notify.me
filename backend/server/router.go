@@ -12,6 +12,7 @@ func NewRouter() *gin.Engine {
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 	router.Use(middlewares.Cors())
+	router.Use(middlewares.ErrorHandler())
 
 	user := new(controllers.UserController)
 	health := new(controllers.HealthController)
