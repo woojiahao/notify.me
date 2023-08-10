@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"github.com/woojiahao/notify.me/db"
 	"github.com/woojiahao/notify.me/forms"
 	"golang.org/x/crypto/bcrypt"
@@ -20,6 +19,7 @@ var (
 	PasswordHashGenerationFail = errors.New("failed to generate password hash")
 	RegistrationEmailUsed      = errors.New("email in use already")
 	UserParseError             = errors.New("failed to parse row")
+	LoginFail                  = errors.New("login credentials invalid")
 )
 
 func (u User) Register(registerPayload forms.UserRegister) (*User, error) {
@@ -55,16 +55,13 @@ func (u User) Register(registerPayload forms.UserRegister) (*User, error) {
 func (u User) Login(loginPayload forms.UserLogin) (*User, error) {
 	user, err := u.FindByEmail(loginPayload.Email)
 	if err != nil {
-		// TODO: Handle this as 404
-		return nil, errors.New("user not found")
+		return nil, UserNotFound
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(loginPayload.Password)); err == nil {
 		return user, nil
 	} else {
-		fmt.Println(err)
-		// TODO: Handle this as invalid request
-		return nil, errors.New("invalid password")
+		return nil, LoginFail
 	}
 }
 

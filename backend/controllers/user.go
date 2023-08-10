@@ -17,8 +17,7 @@ var userModel = new(models.User)
 func (u UserController) Register(c *gin.Context) {
 	var registerPayload forms.UserRegister
 	if err := c.Bind(&registerPayload); err != nil {
-		c.Status(http.StatusBadRequest)
-		_ = c.Error(err)
+		SetStatusAndError(c, http.StatusBadRequest, err)
 		return
 	}
 
@@ -28,8 +27,7 @@ func (u UserController) Register(c *gin.Context) {
 		if err == models.RegistrationEmailUsed {
 			status = http.StatusBadRequest
 		}
-		c.Status(status)
-		_ = c.Error(err)
+		SetStatusAndError(c, status, err)
 		return
 	}
 
@@ -39,34 +37,30 @@ func (u UserController) Register(c *gin.Context) {
 func (u UserController) Login(c *gin.Context) {
 	var loginPayload forms.UserLogin
 	if err := c.Bind(&loginPayload); err != nil {
-		c.JSON(400, gin.H{
-			"error": "Invalid request",
-		})
+		SetStatusAndError(c, http.StatusBadRequest, err)
 		return
 	}
 
 	user, err := userModel.Login(loginPayload)
 	if err != nil {
-		c.JSON(400, gin.H{
-			"error": "Invalid login request",
-		})
+		status := http.StatusNotFound
+		if err == models.LoginFail {
+			status = http.StatusBadRequest
+		}
+		SetStatusAndError(c, status, err)
 		return
 	}
 
 	conf := config.GetConfig()
 	accessJwt, err := createJwt(user, conf.Jwt.Secret, conf.Jwt.AccessDuration)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"error": "Internal server error",
-		})
+		SetStatusAndError(c, http.StatusInternalServerError, err)
 		return
 	}
 
 	refreshJwt, err := createJwt(user, conf.Jwt.Secret, conf.Jwt.RefreshDuration)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"error": "Internal server error",
-		})
+		SetStatusAndError(c, http.StatusInternalServerError, err)
 		return
 	}
 
