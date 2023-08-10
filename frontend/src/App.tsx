@@ -1,16 +1,23 @@
 import { Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
-import { UserProvider } from "./contexts/UserContext";
 import Registration from "./pages/Registration";
 
 function App() {
   return (
-    <UserProvider>
-      <Routes>
-        <Route path="login" element={<Login />} />
-        <Route path="register" element={<Registration />} />
-      </Routes>
-    </UserProvider>
+    <Routes>
+      <Route path="login" element={<Login />} />
+      <Route path="register" element={<Registration />} />
+      <Route
+        index
+        element={
+          <ProtectedRoute>
+            <Home />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
   );
 }
 
