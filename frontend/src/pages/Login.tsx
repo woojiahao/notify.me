@@ -1,23 +1,40 @@
-import { FormEvent } from "react";
-import api from "../api/api";
+import { FormEvent, useState } from "react";
 import { useUserContext } from "../contexts/UserContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const { login } = useUserContext();
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError(null);
     const target = e.target as typeof e.target & {
       emailInput: { value: string };
       passwordInput: { value: string };
     };
 
-    login(target.emailInput.value, target.passwordInput.value);
+    const status = await login(
+      target.emailInput.value,
+      target.passwordInput.value
+    );
+    if (status === 200) navigate("/");
+    else if (status === 400)
+      setError("Login failed. Check your email/password and try again.");
+    else
+      setError("Something wrong happened on our end, we are looking into it.");
   }
 
   return (
-    <div className="w-[60%] my-16 mx-auto">
+    <div className="w-[40%] my-16 mx-auto">
       <h1 className="uppercase mb-4">Login</h1>
+
+      {error && (
+        <p className="p-4 bg-red-200 rounded-md border-2 border-red-400 mb-4 shadow-md">
+          {error}
+        </p>
+      )}
 
       <form
         action="post"

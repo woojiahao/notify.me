@@ -7,6 +7,7 @@ import {
 } from "react";
 import User, { defaultUser } from "../models/user";
 import api from "../api/api";
+import { AxiosError } from "axios";
 
 // Use this context to store and access the authenticated user data across all components and
 // pages
@@ -14,8 +15,8 @@ interface UserContextInterface {
   accessToken: token;
   refreshToken: token;
   user: User;
-  login: (email: string, password: string) => void;
-  register: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<number>;
+  register: (email: string, password: string) => Promise<number>;
   logout: () => void;
 }
 
@@ -58,31 +59,44 @@ export function UserProvider({ children }: React.PropsWithChildren) {
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const response = await api.post("/user/login", {
-      email: email,
-      password: password,
-    });
+    try {
+      const response = await api.post("/user/login", {
+        email: email,
+        password: password,
+      });
 
-    if (response.status === 200) {
-      interface LoginResponse {
-        access: string;
-        refresh: string;
-        user: User;
+      if (response.status === 200) {
+        interface LoginResponse {
+          access: string;
+          refresh: string;
+          user: User;
+        }
+
+        const data = response.data as LoginResponse;
+        localStorage.setItem("access_token", data.access);
+        localStorage.setItem("refresh_token", data.refresh);
+        localStorage.setItem("user", JSON.stringify(data.user));
       }
-
-      const data = response.data as LoginResponse;
-      localStorage.setItem("access_token", data.access);
-      localStorage.setItem("refresh_token", data.refresh);
-      localStorage.setItem("user", JSON.stringify(data.user));
+      return response.status;
+    } catch (e) {
+      const error = e as AxiosError;
+      if (!error.response) return 500;
+      return error.response.status;
     }
   }, []);
 
   const register = useCallback(async (email: string, password: string) => {
-    const response = await api.post("/user/register", {
-      email: email,
-      password: password,
-    });
-    return response.status === 201;
+    try {
+      const response = await api.post("/user/register", {
+        email: email,
+        password: password,
+      });
+      return response.status;
+    } catch (e) {
+      const error = e as AxiosError;
+      if (!error.response) return 500;
+      return error.response.status;
+    }
   }, []);
 
   const logout = useCallback(async () => {

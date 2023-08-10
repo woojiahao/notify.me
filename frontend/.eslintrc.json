@@ -8,7 +8,7 @@
   "plugins": ["@typescript-eslint"],
   "root": true,
   "rules": {
-    "@typescript-eslint/ban-ts-comment": "off",
-    "no-unused-vars": "off"
+    "no-unused-vars": "off",
+    "@typescript-eslint/ban-ts-comment": "off"
   }
 }
