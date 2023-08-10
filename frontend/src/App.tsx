@@ -1,10 +1,14 @@
-import React from "react";
+import { Route, Routes } from "react-router-dom";
+import Login from "./pages/Login";
+import { UserProvider } from "./contexts/UserContext";
 
 function App() {
   return (
-    <div className="bg-blue-500">
-      <h1>Hi</h1>
-    </div>
+    <UserProvider>
+      <Routes>
+        <Route path="login" element={<Login />} />
+      </Routes>
+    </UserProvider>
   );
 }
 
