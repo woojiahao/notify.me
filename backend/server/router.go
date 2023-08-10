@@ -11,6 +11,7 @@ func NewRouter() *gin.Engine {
 	authMiddleware := middlewares.Auth()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+	router.Use(middlewares.Cors())
 
 	user := new(controllers.UserController)
 	health := new(controllers.HealthController)
