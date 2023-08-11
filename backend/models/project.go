@@ -65,6 +65,7 @@ func (p Project) Create(createProjectPayload forms.CreateProject) (*Project, err
 	if err != nil {
 		return nil, ProjectParseError
 	}
+	_ = rows.Close()
 
 	// Assign the creator of the project as the admin
 	result, err := tx.Exec(
@@ -73,7 +74,8 @@ func (p Project) Create(createProjectPayload forms.CreateProject) (*Project, err
 		projectId,
 		Admin,
 	)
-	if rows, _ := result.RowsAffected(); rows != 1 || err != nil {
+	affected, _ := result.RowsAffected()
+	if affected != 1 || err != nil {
 		return nil, ProjectAssignUserError
 	}
 	if err = tx.Commit(); err != nil {

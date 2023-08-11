@@ -46,10 +46,12 @@ func (p ProjectController) FindAll(c *gin.Context) {
 	userId := c.Param("id")
 	projects, err := projectModel.FindAll(userId)
 	if err != nil || len(projects) == 0 {
-		if len(projects) == 0 || err == models.ProjectNotFound {
+		if err == models.ProjectNotFound {
 			SetStatusAndError(c, http.StatusNotFound, err)
-		} else {
+		} else if err == models.ProjectParseError {
 			SetStatusAndError(c, http.StatusInternalServerError, err)
+		} else if len(projects) == 0 {
+			SetStatusAndError(c, http.StatusNotFound, models.ProjectNotFound)
 		}
 		return
 	}
