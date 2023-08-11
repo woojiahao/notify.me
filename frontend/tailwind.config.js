@@ -31,6 +31,7 @@ module.exports = {
       colors: {
         "background-light": "#E7F2F8",
         aquamarine: "#74BDCB",
+        salmon: "#FA8072",
       },
     },
   },
