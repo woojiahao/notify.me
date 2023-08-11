@@ -5,11 +5,12 @@ const api = axios.create({
     process.env.NODE_ENV === "development"
       ? "http://localhost:8080/api"
       : "https://",
-  headers: {
-    Authorization: localStorage.getItem("access_token")
-      ? `Bearer ${localStorage.getItem("access_token")}`
-      : ``,
-  },
+});
+
+api.interceptors.request.use(function (config) {
+  const token = localStorage.getItem("access_token");
+  config.headers.Authorization = `Bearer ${token}`;
+  return config;
 });
 
 export default api;

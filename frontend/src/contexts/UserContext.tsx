@@ -66,11 +66,8 @@ export function UserProvider({ children }: React.PropsWithChildren) {
     const handleLocalStorageChanged = () => {
       // If any of the local storage items update, we update the context values
       // TODO: Setup axios to read from context, not directly from storage
-      if (localStorage.getItem("access_token") !== accessToken) {
+      if (localStorage.getItem("access_token") !== accessToken)
         setAccessToken(localStorage.getItem("access_token"));
-        api.defaults.headers.common["Authorization"] =
-          localStorage.getItem("access_token");
-      }
       if (localStorage.getItem("refresh_token") !== refreshToken)
         setRefreshToken(localStorage.getItem("refresh_token"));
 
@@ -81,10 +78,7 @@ export function UserProvider({ children }: React.PropsWithChildren) {
     };
 
     const handleLocalStorageCleared = () => {
-      if (!localStorage.getItem("access_token")) {
-        setAccessToken(null);
-        api.defaults.headers.common["Authorization"] = "";
-      }
+      if (!localStorage.getItem("access_token")) setAccessToken(null);
       if (!localStorage.getItem("refresh_token")) setRefreshToken(null);
       if (!localStorage.getItem("user")) setUser(defaultUser);
     };

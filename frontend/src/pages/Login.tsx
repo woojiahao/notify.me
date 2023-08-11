@@ -27,6 +27,8 @@ export default function Login() {
     if (status === 200) navigate("/");
     else if (status === 400)
       setError("Login failed. Check your email/password and try again.");
+    else if (status === 404)
+      setError("Email does not exist. Create an account instead.");
     else
       setError("Something wrong happened on our end, we are looking into it.");
   }

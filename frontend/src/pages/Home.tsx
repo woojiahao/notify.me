@@ -178,9 +178,7 @@ export default function Home() {
 
   useEffect(() => {
     if (!isLoading) {
-      (async () => {
-        await loadProjects();
-      })();
+      setReload(true);
     }
   }, [isLoading]);
 
