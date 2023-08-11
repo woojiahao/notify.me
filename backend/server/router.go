@@ -22,18 +22,20 @@ func NewRouter() *gin.Engine {
 	{
 		userGroup := api.Group("user")
 		{
-			userGroup.POST("/register", user.Register)
-			userGroup.POST("/login", user.Login)
+			userGroup.POST("register", user.Register)
+			userGroup.POST("login", user.Login)
+			userGroup.GET(":id/projects", project.FindAll)
 		}
 
 		healthGroup := api.Group("health")
 		{
-			healthGroup.GET("/ping", authMiddleware.MiddlewareFunc(), health.Ping)
+			healthGroup.GET("ping", authMiddleware.MiddlewareFunc(), health.Ping)
 		}
 
 		projectGroup := api.Group("project", authMiddleware.MiddlewareFunc())
 		{
 			projectGroup.POST("", project.Create)
+			projectGroup.GET(":id", project.FindByID)
 		}
 	}
 

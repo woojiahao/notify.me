@@ -154,3 +154,82 @@ func (p Project) FindById(projectId string) (*Project, error) {
 
 	return &project, nil
 }
+
+func (p Project) FindAll(userId string) ([]Project, error) {
+	conn := db.GetDB()
+	rows, err := conn.Query(`
+	SELECT
+	    p.id,
+	    p.name,
+	    p.created_at,
+	    p.updated_at,
+	    created_by_user.id,
+	    created_by_user.name,
+	    created_by_user.email,
+	    updated_by_user.id,
+	    updated_by_user.name,
+	    updated_by_user.email,
+	    project_user.id,
+	    project_user.name,
+	    project_user.email,
+	    user_projects.role
+	FROM projects p
+	    JOIN user_projects ON p.id = user_projects.project_id
+		JOIN users created_by_user ON p.created_by = created_by_user.id
+		LEFT JOIN users updated_by_user ON p.updated_by = updated_by_user.id
+		JOIN users project_user ON user_projects.user_id = project_user.id
+	WHERE user_projects.user_id = $1;
+	`, userId)
+	if err != nil {
+		return nil, ProjectNotFound
+	}
+
+	var projects []Project
+	for rows.Next() {
+		project := Project{}
+		createdByUser := User{}
+		var updatedByUserID sql.NullString
+		var updatedByUserName sql.NullString
+		var updatedByUserEmail sql.NullString
+		projectUser := ProjectUser{}
+		err := rows.Scan(
+			&project.ID,
+			&project.Name,
+			&project.CreatedAt,
+			&project.UpdatedAt,
+			&createdByUser.ID,
+			&createdByUser.Name,
+			&createdByUser.Email,
+			&updatedByUserID,
+			&updatedByUserName,
+			&updatedByUserEmail,
+			&projectUser.User.ID,
+			&projectUser.User.Name,
+			&projectUser.User.Email,
+			&projectUser.Role,
+		)
+		if err != nil {
+			return nil, ProjectParseError
+		}
+		if updatedByUserEmail.Valid && updatedByUserID.Valid && updatedByUserName.Valid {
+			project.UpdatedBy = &User{
+				ID:    updatedByUserID.String,
+				Name:  updatedByUserName.String,
+				Email: updatedByUserEmail.String,
+			}
+		} else {
+			project.UpdatedBy = nil
+		}
+		project.CreatedBy = createdByUser
+		if len(projects) == 0 || projects[len(projects)-1].ID != project.ID {
+			// Add the project as a separate one
+			project.Users = append(project.Users, projectUser)
+			projects = append(projects, project)
+		} else {
+			latestProject := projects[len(projects)-1]
+			latestProject.Users = append(latestProject.Users, projectUser)
+		}
+	}
+
+	return projects, nil
+}

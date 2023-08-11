@@ -26,3 +26,33 @@ func (p ProjectController) Create(c *gin.Context) {
 
 	c.JSON(200, project)
 }
+
+func (p ProjectController) FindByID(c *gin.Context) {
+	projectId := c.Param("id")
+	project, err := projectModel.FindById(projectId)
+	if err != nil {
+		if err == models.ProjectNotFound {
+			SetStatusAndError(c, http.StatusNotFound, err)
+		} else {
+			SetStatusAndError(c, http.StatusInternalServerError, err)
+		}
+		return
+	}
+
+	c.JSON(200, project)
+}
+
+func (p ProjectController) FindAll(c *gin.Context) {
+	userId := c.Param("id")
+	projects, err := projectModel.FindAll(userId)
+	if err != nil || len(projects) == 0 {
+		if len(projects) == 0 || err == models.ProjectNotFound {
+			SetStatusAndError(c, http.StatusNotFound, err)
+		} else {
+			SetStatusAndError(c, http.StatusInternalServerError, err)
+		}
+		return
+	}
+
+	c.JSON(200, projects)
+}
