@@ -16,6 +16,8 @@ func NewRouter() *gin.Engine {
 
 	user := new(controllers.UserController)
 	health := new(controllers.HealthController)
+	project := new(controllers.ProjectController)
+
 	api := router.Group("api")
 	{
 		userGroup := api.Group("user")
@@ -27,6 +29,11 @@ func NewRouter() *gin.Engine {
 		healthGroup := api.Group("health")
 		{
 			healthGroup.GET("/ping", authMiddleware.MiddlewareFunc(), health.Ping)
+		}
+
+		projectGroup := api.Group("project", authMiddleware.MiddlewareFunc())
+		{
+			projectGroup.POST("", project.Create)
 		}
 	}
 

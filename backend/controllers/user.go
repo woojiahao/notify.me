@@ -76,5 +76,6 @@ func createJwt(user *models.User, secret string, durationInS int) (string, error
 	claims := token.Claims.(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(time.Duration(durationInS) * time.Second).Unix()
 	claims["email"] = user.Email
+	claims["user_id"] = user.ID
 	return token.SignedString([]byte(secret))
 }
