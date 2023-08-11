@@ -9,6 +9,7 @@ module.exports = {
   theme: {
     fontFamily: {
       sans: [
+        "Inter",
         "Josefin Sans",
         "ui-sans-serif",
         "system-ui",

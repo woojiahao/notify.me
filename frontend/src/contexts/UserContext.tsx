@@ -74,6 +74,7 @@ export function UserProvider({ children }: React.PropsWithChildren) {
       const userString = localStorage.getItem("user");
       if (userString && JSON.parse(userString) !== user)
         setUser(JSON.parse(userString));
+      setIsLoading(false);
     };
 
     const handleLocalStorageCleared = () => {
@@ -82,7 +83,7 @@ export function UserProvider({ children }: React.PropsWithChildren) {
       if (!localStorage.getItem("user")) setUser(defaultUser);
     };
 
-    window.addEventListener("local_storage_changed", handleLocalStorageChanged);
+    window.addEventListener("local_storage_change", handleLocalStorageChanged);
     window.addEventListener("local_storage_cleared", handleLocalStorageCleared);
 
     return () => {
