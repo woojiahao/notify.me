@@ -1,9 +1,9 @@
 package models
 
 import (
+	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/woojiahao/notify.me/db"
 	"github.com/woojiahao/notify.me/forms"
 	"time"
@@ -40,10 +40,14 @@ var (
 )
 
 func (p Project) Create(createProjectPayload forms.CreateProject) (*Project, error) {
-	// TODO: Wrap inside transaction
 	conn := db.GetDB()
+	tx, err := conn.BeginTx(context.TODO(), nil)
+	if err != nil {
+		return nil, ProjectCreateFail
+	}
+
 	// Create the project
-	rows, err := conn.Query(
+	rows, err := tx.Query(
 		"INSERT INTO projects (name, created_by) VALUES ($1, $2) RETURNING id",
 		createProjectPayload.Name,
 		createProjectPayload.UserID,
@@ -63,7 +67,7 @@ func (p Project) Create(createProjectPayload forms.CreateProject) (*Project, err
 	}
 
 	// Assign the creator of the project as the admin
-	result, err := conn.Exec(
+	result, err := tx.Exec(
 		"INSERT INTO user_projects (user_id, project_id, role) VALUES ($1, $2, $3)",
 		createProjectPayload.UserID,
 		projectId,
@@ -71,6 +75,9 @@ func (p Project) Create(createProjectPayload forms.CreateProject) (*Project, err
 	)
 	if rows, _ := result.RowsAffected(); rows != 1 || err != nil {
 		return nil, ProjectAssignUserError
+	}
+	if err = tx.Commit(); err != nil {
+		return nil, ProjectCreateFail
 	}
 
 	// Retrieve the project
@@ -144,7 +151,6 @@ func (p Project) FindById(projectId string) (*Project, error) {
 		project.CreatedBy = createdByUser
 		project.Users = append(project.Users, projectUser)
 	}
-	fmt.Printf("%+v", project)
 
 	return &project, nil
 }
