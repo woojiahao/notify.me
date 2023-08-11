@@ -1,11 +1,16 @@
 import { FormEvent, useState } from "react";
 import { useUserContext } from "../contexts/UserContext";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+import { defaultUser } from "../models/user";
 
 export default function Login() {
-  const { login } = useUserContext();
+  const { user, isLoading, login } = useUserContext();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+
+  if (!isLoading && user !== defaultUser) {
+    return <Navigate to="/" />;
+  }
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
