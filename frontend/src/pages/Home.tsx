@@ -7,6 +7,7 @@ import { useUserContext } from "../contexts/UserContext";
 import Popup from "reactjs-popup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 function CreateProjectButton({
   setReload,
@@ -126,8 +127,13 @@ function CreateProjectButton({
 }
 
 function ProjectCard({ project }: { project: Project }) {
+  const navigate = useNavigate();
+
   return (
-    <div className="p-4 bg-white rounded-md shadow-md">
+    <div
+      className="p-4 bg-white rounded-md shadow-md hover:shadow-lg hover:cursor-pointer"
+      onClick={() => navigate(`/projects/${project.id}`)}
+    >
       <div className="flex flex-row justify-between items-center mb-2">
         <p className="text-xl font-bold">{project.name}</p>
         <FiEdit size={20} />
@@ -163,6 +169,7 @@ export default function Home() {
   const { user, isLoading } = useUserContext();
   const [projects, setProjects] = useState<Project[]>([]);
   const [reload, setReload] = useState(false);
+  const [searchParams] = useSearchParams();
 
   async function loadProjects() {
     try {
@@ -175,6 +182,21 @@ export default function Home() {
       setProjects([]);
     }
   }
+
+  useEffect(() => {
+    if (searchParams.has("error")) {
+      toast.error(`Error occurred: ${searchParams.get("error")}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (!isLoading) {
