@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { FiEdit } from "react-icons/fi";
 import Layout from "../components/Layout";
 import { Project } from "../models/project";
+import api from "../api/api";
+import { useUserContext } from "../contexts/UserContext";
 
 function ProjectCard({ project }: { project: Project }) {
   return (
@@ -12,7 +14,7 @@ function ProjectCard({ project }: { project: Project }) {
       </div>
       <p>{project.users.length} users involved</p>
       <p className="italic text-gray-500">
-        Created by: {project.createdBy.name}
+        Created by: {project.created_by.name}
       </p>
     </div>
   );
@@ -34,7 +36,7 @@ function ProjectGrid({ projects }: { projects: Project[] }) {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-x-4">
+    <div className="grid grid-cols-3 gap-x-4 gap-y-4">
       {projects.map((project) => (
         <ProjectCard project={project} key={project.id} />
       ))}
@@ -43,68 +45,24 @@ function ProjectGrid({ projects }: { projects: Project[] }) {
 }
 
 export default function Home() {
+  const { user, isLoading } = useUserContext();
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
-    async () => {
-      setProjects([
-        {
-          id: "1",
-          name: "Project Mentor AY23/24",
-          createdBy: {
-            id: "1",
-            name: "John",
-            email: "john@gmail.com",
-          },
-          createdAt: new Date(),
-          users: [
-            {
-              id: "1",
-              name: "John",
-              email: "john@gmail.com",
-              role: "member",
-            },
-          ],
-        },
-        {
-          id: "2",
-          name: "Project Mentor AY23/24",
-          createdBy: {
-            id: "1",
-            name: "John",
-            email: "john@gmail.com",
-          },
-          createdAt: new Date(),
-          users: [
-            {
-              id: "1",
-              name: "John",
-              email: "john@gmail.com",
-              role: "member",
-            },
-          ],
-        },
-        {
-          id: "3",
-          name: "Project Mentor AY23/24",
-          createdBy: {
-            id: "1",
-            name: "John",
-            email: "john@gmail.com",
-          },
-          createdAt: new Date(),
-          users: [
-            {
-              id: "1",
-              name: "John",
-              email: "john@gmail.com",
-              role: "member",
-            },
-          ],
-        },
-      ]);
-    };
-  }, []);
+    if (!isLoading) {
+      (async () => {
+        try {
+          const response = await api.get(`/user/${user.id}/projects`);
+          if (response.status === 200) {
+            const body = response.data as Project[];
+            setProjects(body);
+          }
+        } catch (e) {
+          setProjects([]);
+        }
+      })();
+    }
+  }, [isLoading]);
 
   return (
     <Layout>

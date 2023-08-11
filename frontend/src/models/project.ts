@@ -3,10 +3,10 @@ import User from "./user";
 export interface Project {
   id: string;
   name: string;
-  createdBy: User;
-  createdAt: Date;
-  updatedBy?: User;
-  updatedAt?: Date;
+  created_by: User;
+  created_at: Date;
+  updated_by?: User;
+  updated_at?: Date;
   users: ProjectUser[];
 }
 
