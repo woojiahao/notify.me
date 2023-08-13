@@ -7,9 +7,14 @@ import { FiEdit } from "react-icons/fi";
 import Collection from "../models/collection";
 
 function CollectionItem({ collection }: { collection: Collection }) {
+  const navigate = useNavigate();
+
   return (
-    <div className="bg-slate-100 p-4 rounded-md hover:cursor-pointer shadow hover:shadow-md">
-      <p className="font-bold mb-2">{collection.name}</p>
+    <div
+      onClick={() => navigate(`/collections/${collection.id}`)}
+      className="bg-slate-100 p-4 rounded-md hover:cursor-pointer shadow hover:shadow-md"
+    >
+      <p className="font-bold mb-2 text-lg">{collection.name}</p>
       <p className="text-sm text-gray-500">
         Entries: <span>{collection.entries.length}</span>
       </p>
@@ -76,6 +81,7 @@ export default function ProjectPage() {
           name: "Mentors",
           entry_identifiers: ["First Name", "Last Name"],
           project_id: "2",
+          columns: ["First Name", "Last Name", "Email"],
           entries: [
             {
               id: "1",
@@ -102,6 +108,7 @@ export default function ProjectPage() {
           name: "Mentors",
           entry_identifiers: ["First Name", "Last Name"],
           project_id: "2",
+          columns: ["First Name", "Last Name", "Email"],
           entries: [
             {
               id: "1",

@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Registration from "./pages/Registration";
 import ProjectPage from "./pages/ProjectPage";
+import CollectionPage from "./pages/CollectionPage";
 
 function App() {
   return (
@@ -23,6 +24,14 @@ function App() {
         element={
           <ProtectedRoute>
             <ProjectPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/collections/:collectionId"
+        element={
+          <ProtectedRoute>
+            <CollectionPage />
           </ProtectedRoute>
         }
       />

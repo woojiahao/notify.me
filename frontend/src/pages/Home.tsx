@@ -1,13 +1,13 @@
 import { FormEvent, useEffect, useState } from "react";
 import { FiEdit } from "react-icons/fi";
-import Layout from "../components/Layout";
-import { Project } from "../models/project";
-import api from "../api/api";
-import { useUserContext } from "../contexts/UserContext";
-import Popup from "reactjs-popup";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Popup from "reactjs-popup";
+import api from "../api/api";
+import Layout, { LayoutTitle } from "../components/Layout";
+import { useUserContext } from "../contexts/UserContext";
+import { Project } from "../models/project";
 
 function CreateProjectButton({
   setReload,
@@ -65,7 +65,7 @@ function CreateProjectButton({
     <div>
       <button
         type="button"
-        className="mt-6 p-2 px-4 bg-aquamarine rounded-md"
+        className="p-2 px-4 border-2 font-bold border-aquamarine rounded-md hover:bg-aquamarine hover:text-white transition-all"
         onClick={() => setOpen((o) => !o)}
       >
         Create Project
@@ -157,7 +157,7 @@ function ProjectGrid({ projects }: { projects: Project[] }) {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-x-4 gap-y-4">
+    <div className="grid grid-cols-5 gap-x-4 gap-y-4">
       {projects.map((project) => (
         <ProjectCard project={project} key={project.id} />
       ))}
@@ -215,12 +215,12 @@ export default function Home() {
 
   return (
     <Layout>
-      <div className="flex flex-row justify-between items-center mb-8">
-        <h1>Projects</h1>
+      <LayoutTitle title="Projects">
         <CreateProjectButton setReload={setReload} />
+      </LayoutTitle>
+      <div className="p-4">
+        <ProjectGrid projects={projects} />
       </div>
-      <ProjectGrid projects={projects} />
-      <ToastContainer />
     </Layout>
   );
 }
