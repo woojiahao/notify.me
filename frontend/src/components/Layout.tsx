@@ -31,15 +31,21 @@ export function LayoutTitle({
   );
 }
 
-export function LayoutBody({ children }: PropsWithChildren) {
-  return <div className="p-4">{children}</div>;
+export function LayoutBody({
+  children,
+  className = "",
+}: PropsWithChildren & { className?: string }) {
+  return <div className={`p-4 ${className}`}>{children}</div>;
 }
 
-export default function Layout({ children }: PropsWithChildren) {
+export default function Layout({
+  children,
+  className = "",
+}: PropsWithChildren & { className?: string }) {
   const { user, logout } = useUserContext();
 
   return (
-    <div className="flex flex-col">
+    <div className={`flex flex-col ${className}`}>
       <nav className="p-2 px-4 sticky border-b-2 border-slate-200 bg-white flex flex-row justify-between items-center">
         <div className="flex flex-row gap-x-4 items-center">
           <Link to="/" className="font-bold text-lg">
@@ -72,7 +78,7 @@ export default function Layout({ children }: PropsWithChildren) {
           </button>
         </div>
       </nav>
-      <div>{children}</div>
+      <div className="flex flex-col h-full">{children}</div>
       <ToastContainer />
     </div>
   );

@@ -9,6 +9,7 @@ import Layout, {
   LayoutTitleWithTitleActions,
 } from "../components/Layout";
 import Collection from "../models/collection";
+import RichTextEditor from "../components/RichTextEditor";
 
 function PreviewCollectionButton({ collection }: { collection: Collection }) {
   const [open, setOpen] = useState(false);
@@ -100,7 +101,7 @@ export default function CreateBlast() {
   }
 
   return (
-    <Layout>
+    <Layout className="h-screen">
       <LayoutTitleWithTitleActions
         titleActions={
           <input
@@ -110,7 +111,7 @@ export default function CreateBlast() {
             id="blastNameInput"
             placeholder="Enter blast name"
             defaultValue={`Blast for "${collection.name}"`}
-            className="font-bold w-full p-2 px-4 text-2xl bg-transparent focus:outline-none"
+            className="hover:cursor-pointer focus:hover:cursor-text font-bold w-full text-2xl bg-transparent focus:outline-none"
           />
         }
       >
@@ -134,7 +135,9 @@ export default function CreateBlast() {
           Discard
         </button>
       </LayoutTitleWithTitleActions>
-      <LayoutBody></LayoutBody>
+      <LayoutBody className="h-full flex-grow">
+        <RichTextEditor />
+      </LayoutBody>
     </Layout>
   );
 }
