@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import Layout from "../components/Layout";
+import Layout, { LayoutTitle } from "../components/Layout";
 import Collection from "../models/collection";
 
 function CollectionTableView({ collection }: { collection: Collection }) {
@@ -104,8 +104,10 @@ export default function CollectionPage() {
 
   return (
     <Layout>
-      <h1 className="mb-4">Collection</h1>
-      <CollectionTableView collection={collection} />
+      <LayoutTitle title={collection.name}></LayoutTitle>
+      <div className="p-4">
+        <CollectionTableView collection={collection} />
+      </div>
     </Layout>
   );
 }

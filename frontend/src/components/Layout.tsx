@@ -10,7 +10,7 @@ export function LayoutTitle({
   return (
     <div className="flex flex-row p-2 px-4 border-b-2 border-slate-200 bg-white justify-between items-center">
       <p className="font-bold text-2xl">{title}</p>
-      <div className="flex flex-row justify-between items-center">
+      <div className="flex flex-row justify-between items-center gap-x-4">
         {children}
       </div>
     </div>

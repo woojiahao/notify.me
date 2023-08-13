@@ -1,49 +1,93 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import {
+  HiOutlineDownload,
+  HiOutlinePencil,
+  HiOutlineTrash,
+  HiSelector,
+} from "react-icons/hi";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../api/api";
-import Layout from "../components/Layout";
-import { Project } from "../models/project";
-import { FiEdit } from "react-icons/fi";
+import Layout, { LayoutTitle } from "../components/Layout";
 import Collection from "../models/collection";
-
-function CollectionItem({ collection }: { collection: Collection }) {
-  const navigate = useNavigate();
-
-  return (
-    <div
-      onClick={() => navigate(`/collections/${collection.id}`)}
-      className="bg-slate-100 p-4 rounded-md hover:cursor-pointer shadow hover:shadow-md"
-    >
-      <p className="font-bold mb-2 text-lg">{collection.name}</p>
-      <p className="text-sm text-gray-500">
-        Entries: <span>{collection.entries.length}</span>
-      </p>
-      <p className="text-sm text-gray-500">
-        {collection.entry_identifiers.join(" - ")}
-      </p>
-    </div>
-  );
-}
+import { Project } from "../models/project";
 
 function CollectionsSection({ collections }: { collections: Collection[] }) {
   return (
     <div>
-      <div className="flex flex-row justify-between items-center">
-        <h2>Collections</h2>
-        <button type="button" className="p-2 px-4 bg-aquamarine rounded-md">
-          Create collection
-        </button>
-      </div>
       {collections.length === 0 ? (
-        <div className="text-center bg-white p-4 rounded-md mt-4 shadow-md">
+        <div className="text-center bg-white p-4 rounded-md shadow-md">
           <p>You have no collections.</p>
           <p>Create one above!</p>
         </div>
       ) : (
-        <div className="bg-white p-4 rounded-md mt-4 grid grid-cols-3 gap-4 shadow-md">
-          {collections.map((collection) => (
-            <CollectionItem collection={collection} />
-          ))}
+        <div className="flex flex-col gap-y-4 w-full">
+          <div className="w-full">
+            <input
+              className="w-full p-2 px-4 rounded-md border-2 border-slate-200"
+              type="text"
+              name="searchNameInput"
+              id="searchNameInput"
+              placeholder="Search collection by name"
+            />
+          </div>
+          <div className="w-full bg-white rounded-md">
+            <table className="w-full">
+              <thead className="mb-2">
+                <tr className="text-left">
+                  <th className="p-4 pl-8">
+                    <div className="flex flex-row gap-x-2 items-center">
+                      Name <HiSelector />
+                    </div>
+                  </th>
+                  <th className="p-4">
+                    <div className="flex flex-row gap-x-2 items-center">
+                      # of Entries <HiSelector />
+                    </div>
+                  </th>
+                  <th className="p-4">
+                    <div className="flex flex-row gap-x-2 items-center">
+                      Identifiers <HiSelector />
+                    </div>
+                  </th>
+                  <th className="p-4 pr-8">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {collections.map((collection) => (
+                  <tr className="hover:bg-slate-100 rounded-md">
+                    <td className="p-4 pl-8">
+                      <Link
+                        className="underline text-aquamarine"
+                        to={`/collections/${collection.id}`}
+                      >
+                        {collection.name}
+                      </Link>
+                    </td>
+                    <td className="p-4">{collection.entries.length}</td>
+                    <td className="p-4">
+                      {collection.entry_identifiers.join(", ")}
+                    </td>
+                    <td className="p-4 pr-8">
+                      <div className="flex flex-row items-center gap-x-2">
+                        <HiOutlinePencil
+                          className="hover:cursor-pointer"
+                          size={18}
+                        />
+                        <HiOutlineTrash
+                          className="hover:cursor-pointer"
+                          size={18}
+                        />
+                        <HiOutlineDownload
+                          className="hover:cursor-pointer"
+                          size={18}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>
@@ -139,14 +183,23 @@ export default function ProjectPage() {
   // TODO: Add statistics monitoring below collections section
   return (
     <Layout>
-      <div className="flex flex-row justify-between items-center mb-8">
-        <h1>{project.name}</h1>
-        <div className="p-3 bg-white rounded-full shadow-md hover:cursor-pointer hover:shadow-lg">
-          <FiEdit size={24} />
-        </div>
+      <LayoutTitle title={`Project: ${project.name}`}>
+        <button
+          type="button"
+          className="p-2 px-4 border-2 border-aquamarine rounded-md font-bold hover:bg-aquamarine hover:text-white transition-all"
+        >
+          Edit Project
+        </button>
+        <button
+          type="button"
+          className="p-2 px-4 border-2 border-aquamarine rounded-md font-bold hover:bg-aquamarine hover:text-white transition-all"
+        >
+          Create Collection
+        </button>
+      </LayoutTitle>
+      <div className="p-4">
+        <CollectionsSection collections={collections} />
       </div>
-
-      <CollectionsSection collections={collections} />
     </Layout>
   );
 }
