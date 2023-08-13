@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Registration from "./pages/Registration";
 import ProjectPage from "./pages/ProjectPage";
 import CollectionPage from "./pages/CollectionPage";
+import CreateBlast from "./pages/CreateBlast";
 
 function App() {
   return (
@@ -32,6 +33,14 @@ function App() {
         element={
           <ProtectedRoute>
             <CollectionPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/collections/:collectionId/blast/create"
+        element={
+          <ProtectedRoute>
+            <CreateBlast />
           </ProtectedRoute>
         }
       />

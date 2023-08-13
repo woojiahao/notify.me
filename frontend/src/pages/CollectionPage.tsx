@@ -1,57 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Layout, { LayoutTitle } from "../components/Layout";
 import Collection from "../models/collection";
-
-function CollectionTableView({ collection }: { collection: Collection }) {
-  // Generate the table dynamically using the columns and the values, for columns with optional
-  // values, we simply replace with blanks if not present in current entry
-  const columns = collection.columns;
-  const parsedContents = collection.entries.map((entry) =>
-    JSON.parse(entry.contents)
-  );
-
-  return (
-    <div className="flex flex-col gap-y-4">
-      <div className="w-full">
-        <input
-          className="w-full p-2 px-4 rounded-md border-2 border-slate-200"
-          type="text"
-          name="searchNameInput"
-          id="searchNameInput"
-          placeholder="Search collection by name"
-        />
-      </div>
-
-      <table className="w-full overflow-x-auto rounded-md bg-white">
-        <thead>
-          <tr>
-            {columns.map((col) => (
-              <th>
-                {`${col}${
-                  collection.entry_identifiers.includes(col) ? "*" : ""
-                }`}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {parsedContents.map((contents) => (
-            <tr>
-              {columns.map((col) => (
-                <td>{contents[col]}</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
+import CollectionTableView from "../components/CollectionTableView";
 export default function CollectionPage() {
   const { collectionId } = useParams();
   const [collection, setCollection] = useState<Collection | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log(collectionId);
@@ -120,6 +75,7 @@ export default function CollectionPage() {
     <Layout>
       <LayoutTitle title={`Collection: ${collection.name}`}>
         <button
+          onClick={() => navigate(`/collections/${collection.id}/blast/create`)}
           type="button"
           className="p-2 px-4 border-2 border-kelly-green rounded-md font-bold hover:bg-kelly-green hover:text-white transition-all"
         >

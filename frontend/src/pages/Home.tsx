@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Popup from "reactjs-popup";
 import api from "../api/api";
-import Layout, { LayoutTitle } from "../components/Layout";
+import Layout, { LayoutBody, LayoutTitle } from "../components/Layout";
 import { useUserContext } from "../contexts/UserContext";
 import { Project } from "../models/project";
 
@@ -218,9 +218,9 @@ export default function Home() {
       <LayoutTitle title="Projects">
         <CreateProjectButton setReload={setReload} />
       </LayoutTitle>
-      <div className="p-4">
+      <LayoutBody>
         <ProjectGrid projects={projects} />
-      </div>
+      </LayoutBody>
     </Layout>
   );
 }

@@ -7,7 +7,7 @@ import {
 } from "react-icons/hi";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import api from "../api/api";
-import Layout, { LayoutTitle } from "../components/Layout";
+import Layout, { LayoutBody, LayoutTitle } from "../components/Layout";
 import Collection from "../models/collection";
 import { Project } from "../models/project";
 
@@ -196,9 +196,9 @@ export default function ProjectPage() {
           Create Collection
         </button>
       </LayoutTitle>
-      <div className="p-4">
+      <LayoutBody>
         <CollectionsSection collections={collections} />
-      </div>
+      </LayoutBody>
     </Layout>
   );
 }

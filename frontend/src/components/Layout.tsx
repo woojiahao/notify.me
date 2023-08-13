@@ -1,7 +1,21 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, ReactElement } from "react";
 import { Link } from "react-router-dom";
 import { useUserContext } from "../contexts/UserContext";
 import { ToastContainer } from "react-toastify";
+
+export function LayoutTitleWithTitleActions({
+  titleActions,
+  children,
+}: { titleActions: ReactElement } & PropsWithChildren) {
+  return (
+    <div className="flex flex-row p-2 px-4 border-b-2 border-slate-200 bg-white justify-between items-center">
+      <div className="flex flex-row gap-x-1 items-center">{titleActions}</div>
+      <div className="flex flex-row justify-between items-center gap-x-4">
+        {children}
+      </div>
+    </div>
+  );
+}
 
 export function LayoutTitle({
   title,
@@ -15,6 +29,10 @@ export function LayoutTitle({
       </div>
     </div>
   );
+}
+
+export function LayoutBody({ children }: PropsWithChildren) {
+  return <div className="p-4">{children}</div>;
 }
 
 export default function Layout({ children }: PropsWithChildren) {
@@ -56,16 +74,6 @@ export default function Layout({ children }: PropsWithChildren) {
       </nav>
       <div>{children}</div>
       <ToastContainer />
-      {/* <footer className="p-2 px-4 bg-white mt-12 text-center text-gray-400">
-        <a href="https://github.com/woojiahao/notify.me" className="underline">
-          notify.me
-        </a>{" "}
-        is built with ❤️, Go, and React by{" "}
-        <a href="https://github.com/woojiahao" className="underline">
-          Jiahao
-        </a>
-        .
-      </footer> */}
     </div>
   );
 }
