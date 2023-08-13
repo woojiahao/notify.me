@@ -27,35 +27,36 @@ function CollectionsSection({ collections }: { collections: Collection[] }) {
               type="text"
               name="searchNameInput"
               id="searchNameInput"
-              placeholder="Search collection by name"
+              placeholder="Search collections by name"
             />
           </div>
+
           <div className="w-full bg-white rounded-md">
             <table className="w-full">
-              <thead className="mb-2">
-                <tr className="text-left">
-                  <th className="p-4 pl-8">
+              <thead>
+                <tr>
+                  <th>
                     <div className="flex flex-row gap-x-2 items-center">
                       Name <HiSelector />
                     </div>
                   </th>
-                  <th className="p-4">
+                  <th>
                     <div className="flex flex-row gap-x-2 items-center">
                       # of Entries <HiSelector />
                     </div>
                   </th>
-                  <th className="p-4">
+                  <th>
                     <div className="flex flex-row gap-x-2 items-center">
                       Identifiers <HiSelector />
                     </div>
                   </th>
-                  <th className="p-4 pr-8">Actions</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {collections.map((collection) => (
-                  <tr className="hover:bg-slate-100 rounded-md">
-                    <td className="p-4 pl-8">
+                  <tr>
+                    <td>
                       <Link
                         className="underline text-aquamarine"
                         to={`/collections/${collection.id}`}
@@ -63,11 +64,9 @@ function CollectionsSection({ collections }: { collections: Collection[] }) {
                         {collection.name}
                       </Link>
                     </td>
-                    <td className="p-4">{collection.entries.length}</td>
-                    <td className="p-4">
-                      {collection.entry_identifiers.join(", ")}
-                    </td>
-                    <td className="p-4 pr-8">
+                    <td>{collection.entries.length}</td>
+                    <td>{collection.entry_identifiers.join(", ")}</td>
+                    <td>
                       <div className="flex flex-row items-center gap-x-2">
                         <HiOutlinePencil
                           className="hover:cursor-pointer"

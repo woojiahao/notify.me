@@ -38,4 +38,32 @@
   tr:last-child > td {
     @apply border-0;
   }
+
+  tr {
+    @apply text-left;
+  }
+
+  tr,
+  td,
+  th {
+    @apply p-4;
+  }
+
+  tr:first-child > th:first-child,
+  tbody tr td:first-child {
+    @apply pl-8;
+  }
+
+  tr:first-child > th:last-child,
+  tbody tr td:last-child {
+    @apply pr-8;
+  }
+
+  thead tr th {
+    @apply py-6;
+  }
+
+  tbody > tr {
+    @apply hover:bg-slate-100;
+  }
 }

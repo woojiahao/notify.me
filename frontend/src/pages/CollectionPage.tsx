@@ -12,24 +12,38 @@ function CollectionTableView({ collection }: { collection: Collection }) {
   );
 
   return (
-    <div className="overflow-x-auto rounded-md shadow-md bg-white">
-      <table className="w-full rounded-md border-collapse border-black border-x-2">
-        <tr>
-          {columns.map((col) => (
-            <th className="border-collapse rounded-md border-x-2 border-black p-4">
-              {col}
-            </th>
-          ))}
-        </tr>
-        {parsedContents.map((contents) => (
+    <div className="flex flex-col gap-y-4">
+      <div className="w-full">
+        <input
+          className="w-full p-2 px-4 rounded-md border-2 border-slate-200"
+          type="text"
+          name="searchNameInput"
+          id="searchNameInput"
+          placeholder="Search collection by name"
+        />
+      </div>
+
+      <table className="w-full overflow-x-auto rounded-md bg-white">
+        <thead>
           <tr>
             {columns.map((col) => (
-              <td className="border-collapse rounded-md border-black border-x-2 border-y-2 p-4">
-                {contents[col]}
-              </td>
+              <th>
+                {`${col}${
+                  collection.entry_identifiers.includes(col) ? "*" : ""
+                }`}
+              </th>
             ))}
           </tr>
-        ))}
+        </thead>
+        <tbody>
+          {parsedContents.map((contents) => (
+            <tr>
+              {columns.map((col) => (
+                <td>{contents[col]}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   );
@@ -94,7 +108,7 @@ export default function CollectionPage() {
   if (!collection) {
     return (
       <Layout>
-        <h1>Collection</h1>
+        <LayoutTitle title="Collection"></LayoutTitle>
         <p className="text-center my-8">
           We are loading the collection, please be patient!
         </p>
@@ -104,7 +118,26 @@ export default function CollectionPage() {
 
   return (
     <Layout>
-      <LayoutTitle title={collection.name}></LayoutTitle>
+      <LayoutTitle title={`Collection: ${collection.name}`}>
+        <button
+          type="button"
+          className="p-2 px-4 border-2 border-kelly-green rounded-md font-bold hover:bg-kelly-green hover:text-white transition-all"
+        >
+          Create Blast
+        </button>
+        <button
+          type="button"
+          className="p-2 px-4 border-2 border-aquamarine rounded-md font-bold hover:bg-aquamarine hover:text-white transition-all"
+        >
+          Edit Collection
+        </button>
+        <button
+          type="button"
+          className="p-2 px-4 border-2 border-salmon rounded-md font-bold hover:bg-salmon hover:text-white transition-all"
+        >
+          Delete Collection
+        </button>
+      </LayoutTitle>
       <div className="p-4">
         <CollectionTableView collection={collection} />
       </div>

@@ -32,6 +32,7 @@ module.exports = {
         "background-light": "#E7F2F8",
         aquamarine: "#74BDCB",
         salmon: "#FA8072",
+        "kelly-green": "#18A558",
       },
     },
   },
