@@ -1,0 +1,1 @@
+ALTER TABLE collections ADD COLUMN columns TEXT[] NOT NULL DEFAULT [];
