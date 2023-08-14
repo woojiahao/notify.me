@@ -21,12 +21,9 @@ function PreviewCollectionButton({ collection }: { collection: Collection }) {
         <AiFillEye size={24} />
       </button>
       <Popup open={open} modal>
-        <div
-          className="w-screen h-screen backdrop-blur-sm flex justify-center items-center"
-          onClick={() => setOpen(false)}
-        >
+        <div className="modal-background" onClick={() => setOpen(false)}>
           <div
-            className="bg-white p-8 rounded-md shadow-md flex flex-col h-fit gap-y-8 my-16 w-[80%] mx-auto"
+            className="modal"
             onClick={(e) => {
               e.stopPropagation();
             }}

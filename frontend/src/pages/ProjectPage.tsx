@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useDropzone } from "react-dropzone";
 import {
   HiOutlineDownload,
   HiOutlinePencil,
@@ -6,10 +7,103 @@ import {
   HiSelector,
 } from "react-icons/hi";
 import { Link, useNavigate, useParams } from "react-router-dom";
+import Popup from "reactjs-popup";
 import api from "../api/api";
 import Layout, { LayoutBody, LayoutTitle } from "../components/Layout";
 import Collection from "../models/collection";
 import { Project } from "../models/project";
+
+function UploadCollectionButton() {
+  const [open, setOpen] = useState(false);
+  const collectionNameRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+
+  const onDrop = useCallback(<T extends File>(acceptedFiles: T[]) => {
+    // Do something with the files
+    setFile(acceptedFiles[0]);
+  }, []);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "text/csv": [".csv"],
+    },
+  });
+
+  return (
+    <div>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        type="button"
+        className="p-2 px-4 border-2 border-kelly-green rounded-md font-bold hover:bg-kelly-green hover:text-white transition-all"
+      >
+        Upload Collection
+      </button>
+      <Popup open={open} modal>
+        <div className="modal-background" onClick={() => setOpen(false)}>
+          <div
+            className="modal"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+          >
+            <div>
+              <h1>Upload Collection</h1>
+              <p className="text-gray-400">
+                Configure how to handle the collection.
+              </p>
+              <p className="text-gray-400">
+                notify.me supports <strong>.csv</strong> files only at the
+                moment
+              </p>
+            </div>
+
+            <div>
+              <label
+                htmlFor="collectionNameInput"
+                className="font-bold text-xl"
+              >
+                Collection Name
+              </label>
+              <input
+                type="text"
+                name="collectionNameInput"
+                id="collectionNameInput"
+                ref={collectionNameRef}
+                placeholder="Collection name"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="fileDropzone" className="font-bold text-xl">
+                Drop File
+              </label>
+              <p className="text-gray-400">
+                notify.me supports <strong>.csv</strong> files only at the
+                moment
+              </p>
+              <div
+                {...getRootProps()}
+                className="p-4 py-12 font-bold text-lg border-dotted border-8 bg-slate-100 rounded-md text-center hover:cursor-pointer"
+              >
+                <input {...getInputProps()} />
+                {!file &&
+                  (isDragActive ? (
+                    <p>Drop the files here ...</p>
+                  ) : (
+                    <p>
+                      Drag 'n' drop some files here, or click to select files
+                    </p>
+                  ))}
+                {file && <p>Uploaded {file.name}. Click to replace.</p>}
+              </div>
+            </div>
+          </div>
+        </div>
+      </Popup>
+    </div>
+  );
+}
 
 function CollectionsSection({ collections }: { collections: Collection[] }) {
   return (
@@ -183,17 +277,12 @@ export default function ProjectPage() {
   return (
     <Layout>
       <LayoutTitle title={`Project: ${project.name}`}>
+        <UploadCollectionButton />
         <button
           type="button"
           className="p-2 px-4 border-2 border-aquamarine rounded-md font-bold hover:bg-aquamarine hover:text-white transition-all"
         >
           Edit Project
-        </button>
-        <button
-          type="button"
-          className="p-2 px-4 border-2 border-aquamarine rounded-md font-bold hover:bg-aquamarine hover:text-white transition-all"
-        >
-          Create Collection
         </button>
       </LayoutTitle>
       <LayoutBody>

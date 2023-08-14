@@ -67,4 +67,18 @@
   tbody > tr {
     @apply hover:bg-slate-100;
   }
+
+  input {
+    @apply w-full p-2 px-4 rounded-md border-2 border-slate-200;
+  }
+}
+
+@layer components {
+  .modal {
+    @apply bg-white p-8 rounded-md shadow-md flex flex-col h-fit gap-y-8 my-16 w-[80%] mx-auto;
+  }
+
+  .modal-background {
+    @apply w-screen h-screen backdrop-blur-sm flex justify-center items-center;
+  }
 }
