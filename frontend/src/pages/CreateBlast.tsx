@@ -10,6 +10,7 @@ import Layout, {
 } from "../components/Layout";
 import Collection from "../models/collection";
 import RichTextEditor from "../components/RichTextEditor";
+import * as monaco from "monaco-editor";
 
 function PreviewCollectionButton({ collection }: { collection: Collection }) {
   const [open, setOpen] = useState(false);
@@ -100,6 +101,15 @@ export default function CreateBlast() {
     );
   }
 
+  function handleEditorChange(
+    value: string | undefined,
+    editor: monaco.editor.IModelContentChangedEvent
+  ) {
+    console.log(value);
+    console.log(editor);
+    // TODO: Save this as draft into the system
+  }
+
   return (
     <Layout className="h-screen">
       <LayoutTitleWithTitleActions
@@ -136,7 +146,7 @@ export default function CreateBlast() {
         </button>
       </LayoutTitleWithTitleActions>
       <LayoutBody className="h-full flex-grow">
-        <RichTextEditor />
+        <RichTextEditor onChange={handleEditorChange} />
       </LayoutBody>
     </Layout>
   );
