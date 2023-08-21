@@ -1,3 +1,6 @@
+/* eslint-disable */
+
+import Papa from "papaparse";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import {
@@ -16,11 +19,16 @@ import { Project } from "../models/project";
 function UploadCollectionButton() {
   const [open, setOpen] = useState(false);
   const collectionNameRef = useRef<HTMLInputElement>(null);
+  const selectIdentifierRef = useRef<HTMLSelectElement>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [skipRows, setSkipRows] = useState<number>(0);
+  const [columns, setColumns] = useState<string[]>([]);
+  const [identifiers, setIdentifiers] = useState<string[]>([]);
 
   const onDrop = useCallback(<T extends File>(acceptedFiles: T[]) => {
     // Do something with the files
     setFile(acceptedFiles[0]);
+    parseFile(acceptedFiles[0], skipRows);
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -29,6 +37,42 @@ function UploadCollectionButton() {
     },
   });
 
+  function skipRowsInputOnChange(e: React.ChangeEvent<HTMLInputElement>) {
+    if (e.target.value === "") return;
+    const sr = parseInt(e.target.value);
+    setSkipRows(sr);
+    if (file) parseFile(file, sr);
+  }
+
+  function parseFile(f: File, sr: number) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const contents = e.target?.result;
+      if (!contents) return;
+      // TODO: Lazy load this so we don't expand too much memory trying to read large fs
+      const body = contents.toString().split("\r\n").slice(sr).join("\r\n");
+      const csv = Papa.parse(body, {
+        header: true,
+      });
+      const data = csv.data as Object[];
+      console.log(data);
+      // Remove blank columns and rename any duplicate columns to have _1 appended to them
+      const allColumns = data.reduce((acc, cur) => {
+        const accSet = acc as Set<string>;
+        Object.keys(cur).forEach(accSet.add, accSet);
+        return accSet;
+      }, new Set<string>()) as Set<string>;
+      setColumns(Array.from(allColumns));
+    };
+    reader.readAsText(f);
+  }
+
+  function addIdentifier() {
+    const value = selectIdentifierRef.current?.value;
+    if (value) setIdentifiers((prev) => [...prev, value]);
+  }
+
+  // TODO: Once the file is uploaded, we can display the rest of the components to select and edit the file
   return (
     <div>
       <button
@@ -39,9 +83,18 @@ function UploadCollectionButton() {
         Upload Collection
       </button>
       <Popup open={open} modal>
-        <div className="modal-background" onClick={() => setOpen(false)}>
+        <div
+          className="modal-background"
+          onClick={() => {
+            setOpen(false);
+            setColumns([]);
+            setFile(null);
+            setSkipRows(0);
+            setIdentifiers([]);
+          }}
+        >
           <div
-            className="modal"
+            className="modal overflow-y-auto"
             onClick={(e) => {
               e.stopPropagation();
             }}
@@ -50,10 +103,6 @@ function UploadCollectionButton() {
               <h1>Upload Collection</h1>
               <p className="text-gray-400">
                 Configure how to handle the collection.
-              </p>
-              <p className="text-gray-400">
-                notify.me supports <strong>.csv</strong> files only at the
-                moment
               </p>
             </div>
 
@@ -84,7 +133,7 @@ function UploadCollectionButton() {
               </p>
               <div
                 {...getRootProps()}
-                className="p-4 py-12 font-bold text-lg border-dotted border-8 bg-slate-100 rounded-md text-center hover:cursor-pointer"
+                className="p-4 py-12 font-bold text-lg border-dotted border-8 bg-slate-50 rounded-md text-center hover:cursor-pointer"
               >
                 <input {...getInputProps()} />
                 {!file &&
@@ -95,9 +144,68 @@ function UploadCollectionButton() {
                       Drag 'n' drop some files here, or click to select files
                     </p>
                   ))}
-                {file && <p>Uploaded {file.name}. Click to replace.</p>}
+                {file && (
+                  <p>
+                    Uploaded <span className="underline">{file.name}</span>.
+                    Click to replace.
+                  </p>
+                )}
               </div>
             </div>
+
+            {file && (
+              <div className="flex flex-col gap-y-2">
+                <p className="font-bold text-xl">Configure Collection</p>
+
+                <div>
+                  <label htmlFor="skipRowsInput" className="font-bold w-full">
+                    Skip rows
+                  </label>
+                  <input
+                    type="number"
+                    name="skipRowsInput"
+                    id="skipRowsInput"
+                    defaultValue={0}
+                    min={0}
+                    onChange={skipRowsInputOnChange}
+                  />
+                </div>
+
+                <div>
+                  <p className="font-bold w-full">
+                    Select your identifier columns
+                  </p>
+                  <p className="text-gray-400">Select at least one!</p>
+                  {/* First component is the already selected identifiers */}
+                  <div>
+                    <p>{identifiers.join(", ")}</p>
+                  </div>
+
+                  {/* Second component is the unselected columns that are available */}
+                  <div className="flex flex-row items-center">
+                    <select
+                      ref={selectIdentifierRef}
+                      name="identifierDropdown"
+                      id="identifierDropdown"
+                      className="w-full p-2 px-4 rounded-md border-2 border-slate-200 mr-8"
+                    >
+                      {columns
+                        .filter((col) => !identifiers.includes(col))
+                        .map((col) => (
+                          <option value={col}>{col}</option>
+                        ))}
+                    </select>
+                    <button
+                      type="button"
+                      className="bg-kelly-green text-white font-bold p-2 px-4 rounded-md"
+                      onClick={() => addIdentifier()}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Popup>
@@ -149,7 +257,7 @@ function CollectionsSection({ collections }: { collections: Collection[] }) {
               </thead>
               <tbody>
                 {collections.map((collection) => (
-                  <tr>
+                  <tr key={collection.id}>
                     <td>
                       <Link
                         className="underline text-aquamarine"
