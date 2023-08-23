@@ -17,6 +17,7 @@ func NewRouter() *gin.Engine {
 	user := new(controllers.UserController)
 	health := new(controllers.HealthController)
 	project := new(controllers.ProjectController)
+	collection := new(controllers.CollectionController)
 
 	api := router.Group("api")
 	{
@@ -36,6 +37,7 @@ func NewRouter() *gin.Engine {
 		{
 			projectGroup.POST("", project.Create)
 			projectGroup.GET(":id", project.FindByID)
+			projectGroup.POST(":id/collection", collection.Create)
 		}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	sql "database/sql"
 	"encoding/csv"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/lib/pq"
@@ -61,11 +62,20 @@ func (c Collection) Create(createCollectionPayload forms.CreateCollection, proje
 
 	// Create all the entries as a bulk import
 	var bulkQueries []string
+	var jsonEntries []any
 	for i := 0; i < len(entries); i++ {
-		bulkQueries = append(bulkQueries, fmt.Sprintf("($%d)", i+1))
+		bulkQueries = append(bulkQueries, fmt.Sprintf("($1, $%d)", i+2))
+		bs, err := json.Marshal(entries[i])
+		if err != nil {
+			return nil, CollectionCreateFail
+		}
+		jsonEntries = append(jsonEntries, string(bs))
 	}
-	query := fmt.Sprintf("INSERT INTO entries VALUES %s", strings.Join(bulkQueries, ", "))
-	_, err = tx.ExecContext(context.TODO(), query, entries...)
+	query := fmt.Sprintf("INSERT INTO entries (collection_id, contents) VALUES %s", strings.Join(bulkQueries, ", "))
+	var args []any
+	args = append(args, collectionId)
+	args = append(args, jsonEntries...)
+	_, err = tx.ExecContext(context.TODO(), query, args...)
 	if err != nil {
 		return nil, CollectionCreateFail
 	}
@@ -87,18 +97,25 @@ func (c Collection) Create(createCollectionPayload forms.CreateCollection, proje
 	collection := Collection{}
 	for rows.Next() {
 		entry := Entry{}
+		var contents []byte
 		err = rows.Scan(
 			&collection.ID,
 			&collection.Name,
-			&collection.EntryIdentifiers,
+			pq.Array(&collection.EntryIdentifiers),
 			&collection.ProjectId,
-			&collection.Columns,
+			pq.Array(&collection.Columns),
 			&entry.ID,
-			&entry.Contents,
+			&contents,
 		)
 		if err != nil {
 			return nil, CollectionCreateFail
 		}
+		var unmarshaledContents map[string]any
+		err = json.Unmarshal(contents, &unmarshaledContents)
+		if err != nil {
+			return nil, CollectionCreateFail
+		}
+		entry.Contents = unmarshaledContents
 		collection.Entries = append(collection.Entries, entry)
 	}
 
@@ -110,11 +127,11 @@ func (c Collection) Create(createCollectionPayload forms.CreateCollection, proje
 	return &collection, nil
 }
 
-func extractCSV(file *multipart.FileHeader, skipRow int) ([]any, error) {
+func extractCSV(file *multipart.FileHeader, skipRow int) ([]map[string]string, error) {
 	// Extract the headers and
 	f, err := file.Open()
 	if err != nil {
-		return make([]any, 0), nil
+		return make([]map[string]string, 0), nil
 	}
 
 	reader := csv.NewReader(f)
@@ -126,7 +143,7 @@ func extractCSV(file *multipart.FileHeader, skipRow int) ([]any, error) {
 	// Handle the skip rows
 	rows := allEntries[skipRow:]
 
-	var entries []any
+	var entries []map[string]string
 
 	// Parse first row as the header column
 	headers := handleHeaderDuplicates(rows[0])
