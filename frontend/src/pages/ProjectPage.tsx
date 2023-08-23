@@ -16,8 +16,9 @@ import Layout, { LayoutBody, LayoutTitle } from "../components/Layout";
 import Collection from "../models/collection";
 import { Project } from "../models/project";
 import { AiOutlineClose } from "react-icons/ai";
+import { toast } from "react-toastify";
 
-function UploadCollectionButton() {
+function UploadCollectionButton({ projectId }: { projectId: string }) {
   const [open, setOpen] = useState(false);
   const collectionNameRef = useRef<HTMLInputElement>(null);
   const selectIdentifierRef = useRef<HTMLSelectElement>(null);
@@ -86,7 +87,7 @@ function UploadCollectionButton() {
     setIdentifiers([]);
   }
 
-  function uploadCollection() {
+  async function uploadCollection() {
     if (!collectionNameRef.current?.value) {
       setError("Missing collection name");
       return;
@@ -103,12 +104,41 @@ function UploadCollectionButton() {
     }
 
     const form = new FormData();
-    form.append("collection_file", file);
-    form.append("collection_name", collectionNameRef.current.value);
-    columns.forEach((col) => form.append("collection_columns", col));
-    identifiers.forEach((id) => form.append("collection_identifiers", id));
+    form.append("file", file);
+    form.append("name", collectionNameRef.current.value);
+    columns.forEach((col) => form.append("columns", col));
+    identifiers.forEach((id) => form.append("identifiers", id));
+    form.append("skip_row", skipRows.toString());
 
-    api.post("/collection", form);
+    try {
+      await api.post(`/project/${projectId}/collection`, form);
+      toast(`Collection ${collectionNameRef.current.value} created!`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    } catch (e) {
+      toast.error(
+        "Something went wrong with the collection upload. Please try again later.",
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
+    } finally {
+      closeModal();
+    }
   }
 
   // TODO: Once the file is uploaded, we can display the rest of the components to select and edit the file
@@ -449,7 +479,7 @@ export default function ProjectPage() {
   return (
     <Layout>
       <LayoutTitle title={`Project: ${project.name}`}>
-        <UploadCollectionButton />
+        {projectId && <UploadCollectionButton projectId={projectId} />}
         <button
           type="button"
           className="p-2 px-4 border-2 border-aquamarine rounded-md font-bold hover:bg-aquamarine hover:text-white transition-all"
