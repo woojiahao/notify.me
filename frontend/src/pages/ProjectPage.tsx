@@ -15,6 +15,7 @@ import api from "../api/api";
 import Layout, { LayoutBody, LayoutTitle } from "../components/Layout";
 import Collection from "../models/collection";
 import { Project } from "../models/project";
+import { AiOutlineClose } from "react-icons/ai";
 
 function UploadCollectionButton() {
   const [open, setOpen] = useState(false);
@@ -24,6 +25,7 @@ function UploadCollectionButton() {
   const [skipRows, setSkipRows] = useState<number>(0);
   const [columns, setColumns] = useState<string[]>([]);
   const [identifiers, setIdentifiers] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback(<T extends File>(acceptedFiles: T[]) => {
     // Do something with the files
@@ -72,6 +74,43 @@ function UploadCollectionButton() {
     if (value) setIdentifiers((prev) => [...prev, value]);
   }
 
+  function removeIdentifier(identifier: string) {
+    setIdentifiers((prev) => prev.filter((val) => val !== identifier));
+  }
+
+  function closeModal() {
+    setOpen(false);
+    setColumns([]);
+    setFile(null);
+    setSkipRows(0);
+    setIdentifiers([]);
+  }
+
+  function uploadCollection() {
+    if (!collectionNameRef.current?.value) {
+      setError("Missing collection name");
+      return;
+    }
+
+    if (identifiers.length === 0) {
+      setError("Select at least one identifier");
+      return;
+    }
+
+    if (!file) {
+      setError("Upload a file");
+      return;
+    }
+
+    const form = new FormData();
+    form.append("collection_file", file);
+    form.append("collection_name", collectionNameRef.current.value);
+    columns.forEach((col) => form.append("collection_columns", col));
+    identifiers.forEach((id) => form.append("collection_identifiers", id));
+
+    api.post("/collection", form);
+  }
+
   // TODO: Once the file is uploaded, we can display the rest of the components to select and edit the file
   return (
     <div>
@@ -83,16 +122,7 @@ function UploadCollectionButton() {
         Upload Collection
       </button>
       <Popup open={open} modal>
-        <div
-          className="modal-background"
-          onClick={() => {
-            setOpen(false);
-            setColumns([]);
-            setFile(null);
-            setSkipRows(0);
-            setIdentifiers([]);
-          }}
-        >
+        <div className="modal-background" onClick={closeModal}>
           <div
             className="modal overflow-y-auto"
             onClick={(e) => {
@@ -105,6 +135,12 @@ function UploadCollectionButton() {
                 Configure how to handle the collection.
               </p>
             </div>
+
+            {error && (
+              <div className="p-4 bg-red-200 rounded-md border-2 border-red-400">
+                {error}
+              </div>
+            )}
 
             <div>
               <label
@@ -177,9 +213,18 @@ function UploadCollectionButton() {
                   </p>
                   <p className="text-gray-400">Select at least one!</p>
                   {/* First component is the already selected identifiers */}
-                  <div>
-                    <p>{identifiers.join(", ")}</p>
-                  </div>
+                  {identifiers.length > 0 && (
+                    <div className="py-4 flex flex-row flex-wrap gap-x-4">
+                      {identifiers.map((identifier) => (
+                        <div className="inline-flex flex-row gap-x-2 p-2 px-4 bg-blue-300 rounded-md items-center">
+                          <span className="">{identifier}</span>
+                          <AiOutlineClose
+                            onClick={() => removeIdentifier(identifier)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Second component is the unselected columns that are available */}
                   <div className="flex flex-row items-center">
@@ -187,7 +232,7 @@ function UploadCollectionButton() {
                       ref={selectIdentifierRef}
                       name="identifierDropdown"
                       id="identifierDropdown"
-                      className="w-full p-2 px-4 rounded-md border-2 border-slate-200 mr-8"
+                      className="w-full p-2 px-4 rounded-md border-2 border-slate-200 mr-4"
                     >
                       {columns
                         .filter((col) => !identifiers.includes(col))
@@ -203,6 +248,25 @@ function UploadCollectionButton() {
                       Add
                     </button>
                   </div>
+
+                  {identifiers.length >= 1 && (
+                    <div className="flex flex-row justify-between items-center mt-4">
+                      <button
+                        type="button"
+                        onClick={closeModal}
+                        className="p-2 px-4 rounded-md bg-red-400 text-white font-bold"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={uploadCollection}
+                        className="p-2 px-4 rounded-md bg-kelly-green text-white font-bold"
+                      >
+                        Upload
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
