@@ -25,6 +25,8 @@ type Collection struct {
 
 var (
 	CollectionCreateFail = errors.New("failed to create collection")
+	CollectionNotFound   = errors.New("collection not found")
+	CollectionParseError = errors.New("failed to parse collection")
 	CSVParseError        = errors.New("failed to parse CSV file")
 )
 
@@ -80,7 +82,72 @@ func (c Collection) Create(createCollectionPayload forms.CreateCollection, proje
 		return nil, CollectionCreateFail
 	}
 
-	rows, err := tx.Query(`
+	err = tx.Commit()
+	if err != nil {
+		return nil, CollectionCreateFail
+	}
+
+	return c.FindById(collectionId)
+}
+
+func (c Collection) FindAll(projectId string) ([]Collection, error) {
+	conn := db.GetDB()
+	rows, err := conn.Query(`
+	SELECT
+		collections.id AS collection_id,
+		name,
+		entry_identifiers,
+		project_id,
+		columns,
+		entries.id AS entry_id,
+		contents
+	FROM collections
+		JOIN entries ON collections.id = entries.collection_id
+	WHERE project_id = $1
+	`, projectId)
+
+	if err != nil {
+		return nil, CollectionNotFound
+	}
+
+	var collections []Collection
+	for rows.Next() {
+		collection := Collection{}
+		entry := Entry{}
+		var contents []byte
+		err = rows.Scan(
+			&collection.ID,
+			&collection.Name,
+			pq.Array(&collection.EntryIdentifiers),
+			&collection.ProjectId,
+			pq.Array(&collection.Columns),
+			&entry.ID,
+			&contents,
+		)
+		if err != nil {
+			return nil, CollectionParseError
+		}
+		var unmarshaledContents map[string]any
+		err = json.Unmarshal(contents, &unmarshaledContents)
+		if err != nil {
+			return nil, CollectionParseError
+		}
+		entry.Contents = unmarshaledContents
+		if len(collections) == 0 || collections[len(collections)-1].ID != collection.ID {
+			collection.Entries = append(collection.Entries, entry)
+			collections = append(collections, collection)
+		} else {
+			latestCollection := collections[len(collections)-1]
+			latestCollection.Entries = append(latestCollection.Entries, entry)
+		}
+	}
+
+	return collections, nil
+}
+
+func (c Collection) FindById(collectionId string) (*Collection, error) {
+	conn := db.GetDB()
+	rows, err := conn.Query(`
 	SELECT
 		collections.id AS collection_id,
 		name,
@@ -117,11 +184,6 @@ func (c Collection) Create(createCollectionPayload forms.CreateCollection, proje
 		}
 		entry.Contents = unmarshaledContents
 		collection.Entries = append(collection.Entries, entry)
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return nil, CollectionCreateFail
 	}
 
 	return &collection, nil
