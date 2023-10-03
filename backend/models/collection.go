@@ -31,6 +31,7 @@ var (
 )
 
 func (c Collection) Create(createCollectionPayload forms.CreateCollection, projectId string) (*Collection, error) {
+	// TODO: Exploring storing the entire CSV on blob storage
 	// Parse CSV file
 	entries, err := extractCSV(createCollectionPayload.File, createCollectionPayload.SkipRow)
 	if err != nil {
@@ -90,7 +91,7 @@ func (c Collection) Create(createCollectionPayload forms.CreateCollection, proje
 	return c.FindById(collectionId)
 }
 
-func (c Collection) FindAll(projectId string) ([]Collection, error) {
+func (c Collection) FindAllByProjectId(projectId string) ([]Collection, error) {
 	conn := db.GetDB()
 	rows, err := conn.Query(`
 	SELECT
@@ -107,7 +108,7 @@ func (c Collection) FindAll(projectId string) ([]Collection, error) {
 	`, projectId)
 
 	if err != nil {
-		return nil, CollectionNotFound
+		return nil, CollectionParseError
 	}
 
 	var collections []Collection
@@ -137,8 +138,7 @@ func (c Collection) FindAll(projectId string) ([]Collection, error) {
 			collection.Entries = append(collection.Entries, entry)
 			collections = append(collections, collection)
 		} else {
-			latestCollection := collections[len(collections)-1]
-			latestCollection.Entries = append(latestCollection.Entries, entry)
+			collections[len(collections)-1].Entries = append(collections[len(collections)-1].Entries, entry)
 		}
 	}
 

@@ -5,6 +5,9 @@ const api = axios.create({
     process.env.NODE_ENV === "development"
       ? "http://localhost:8080/api"
       : "https://",
+  validateStatus: (status) => {
+    return status < 500;
+  },
 });
 
 api.interceptors.request.use(function (config) {

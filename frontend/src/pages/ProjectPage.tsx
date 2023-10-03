@@ -414,53 +414,19 @@ export default function ProjectPage() {
 
   useEffect(() => {
     (async () => {
-      setCollections([
-        {
-          id: "1",
-          name: "Mentors",
-          entry_identifiers: ["First Name", "Last Name"],
-          project_id: "2",
-          columns: ["First Name", "Last Name", "Email"],
-          entries: [
-            {
-              id: "1",
-              contents: JSON.stringify({
-                "First Name": "John",
-                "Last Name": "Doe",
-                Email: "john@gmail.com",
-              }),
-              collection_id: "1",
-            },
-            {
-              id: "2",
-              contents: JSON.stringify({
-                "First Name": "Mary",
-                "Last Name": "Anne",
-                Email: "mary@gmail.com",
-              }),
-              collection_id: "1",
-            },
-          ],
-        },
-        {
-          id: "2",
-          name: "Mentors",
-          entry_identifiers: ["First Name", "Last Name"],
-          project_id: "2",
-          columns: ["First Name", "Last Name", "Email"],
-          entries: [
-            {
-              id: "1",
-              contents: JSON.stringify({
-                "First Name": "John",
-                "Last Name": "Doe",
-                Email: "john@gmail.com",
-              }),
-              collection_id: "2",
-            },
-          ],
-        },
-      ]);
+      try {
+        const response = await api.get(`/project/${projectId}/collection`);
+        if (response.status === 200) {
+          console.log(response.data);
+          const body = response.data as Collection[];
+          setCollections(body);
+        }
+      } catch (e) {
+        navigate({
+          pathname: "/",
+          search: "?error=Collection failed to load, try again",
+        });
+      }
     })();
   }, []);
 

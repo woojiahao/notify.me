@@ -38,6 +38,7 @@ func NewRouter() *gin.Engine {
 			projectGroup.POST("", project.Create)
 			projectGroup.GET(":id", project.FindByID)
 			projectGroup.POST(":id/collection", collection.Create)
+			projectGroup.GET(":id/collection", collection.FindAllInProject)
 		}
 	}
 

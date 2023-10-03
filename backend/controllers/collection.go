@@ -27,3 +27,14 @@ func (cc CollectionController) Create(c *gin.Context) {
 
 	c.JSON(200, collection)
 }
+
+func (cc CollectionController) FindAllInProject(c *gin.Context) {
+	projectId := c.Param("id")
+	collections, err := collectionModel.FindAllByProjectId(projectId)
+	if err != nil {
+		SetStatusAndError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	c.JSON(200, collections)
+}
