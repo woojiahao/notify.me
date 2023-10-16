@@ -228,8 +228,7 @@ func (p Project) FindAll(userId string) ([]Project, error) {
 			project.Users = append(project.Users, projectUser)
 			projects = append(projects, project)
 		} else {
-			latestProject := projects[len(projects)-1]
-			latestProject.Users = append(latestProject.Users, projectUser)
+			projects[len(projects)-1].Users = append(projects[len(projects)-1].Users, projectUser)
 		}
 	}
 

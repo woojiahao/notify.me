@@ -40,6 +40,11 @@ func NewRouter() *gin.Engine {
 			projectGroup.POST(":id/collection", collection.Create)
 			projectGroup.GET(":id/collection", collection.FindAllInProject)
 		}
+
+		collectionGroup := api.Group("collection", authMiddleware.MiddlewareFunc())
+		{
+			collectionGroup.GET(":id", collection.FindById)
+		}
 	}
 
 	return router

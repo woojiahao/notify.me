@@ -38,3 +38,18 @@ func (cc CollectionController) FindAllInProject(c *gin.Context) {
 
 	c.JSON(200, collections)
 }
+
+func (cc CollectionController) FindById(c *gin.Context) {
+	collectionId := c.Param("id")
+	collection, err := collectionModel.FindById(collectionId)
+	if err != nil {
+		if err == models.CollectionNotFound {
+			SetStatusAndError(c, http.StatusNotFound, err)
+		} else {
+			SetStatusAndError(c, http.StatusInternalServerError, err)
+		}
+		return
+	}
+
+	c.JSON(200, collection)
+}

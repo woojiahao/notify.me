@@ -128,12 +128,12 @@ func (c Collection) FindAllByProjectId(projectId string) ([]Collection, error) {
 		if err != nil {
 			return nil, CollectionParseError
 		}
-		var unmarshaledContents map[string]any
-		err = json.Unmarshal(contents, &unmarshaledContents)
+		var unmarshalledContents map[string]any
+		err = json.Unmarshal(contents, &unmarshalledContents)
 		if err != nil {
 			return nil, CollectionParseError
 		}
-		entry.Contents = unmarshaledContents
+		entry.Contents = unmarshalledContents
 		if len(collections) == 0 || collections[len(collections)-1].ID != collection.ID {
 			collection.Entries = append(collection.Entries, entry)
 			collections = append(collections, collection)
@@ -161,8 +161,14 @@ func (c Collection) FindById(collectionId string) (*Collection, error) {
 	WHERE collections.id = $1
 	`, collectionId)
 
+	if err != nil {
+		return nil, CollectionParseError
+	}
+
+	hasCollection := false
 	collection := Collection{}
 	for rows.Next() {
+		hasCollection = true
 		entry := Entry{}
 		var contents []byte
 		err = rows.Scan(
@@ -177,16 +183,20 @@ func (c Collection) FindById(collectionId string) (*Collection, error) {
 		if err != nil {
 			return nil, CollectionCreateFail
 		}
-		var unmarshaledContents map[string]any
-		err = json.Unmarshal(contents, &unmarshaledContents)
+		var unmarshalledContents map[string]any
+		err = json.Unmarshal(contents, &unmarshalledContents)
 		if err != nil {
 			return nil, CollectionCreateFail
 		}
-		entry.Contents = unmarshaledContents
+		entry.Contents = unmarshalledContents
 		collection.Entries = append(collection.Entries, entry)
 	}
 
-	return &collection, nil
+	if hasCollection {
+		return &collection, nil
+	}
+
+	return nil, CollectionNotFound
 }
 
 func extractCSV(file *multipart.FileHeader, skipRow int) ([]map[string]string, error) {
