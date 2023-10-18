@@ -22,6 +22,7 @@ interface UserContextInterface {
   login: (email: string, password: string) => Promise<number>;
   register: (name: string, email: string, password: string) => Promise<number>;
   logout: () => void;
+  hasExpired: () => Promise<boolean>;
 }
 
 type token = string | null;
@@ -41,6 +42,9 @@ const UserContext = createContext<UserContextInterface>({
   logout: function () {
     throw new Error("Function not implemented");
   },
+  hasExpired: function () {
+    throw new Error("Function not implemented");
+  },
 });
 /* eslint-enable no-unused-vars */
 
@@ -52,11 +56,13 @@ export function UserProvider({ children }: React.PropsWithChildren) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useLayoutEffect(() => {
+    const at = localStorage.getItem("access_token");
+    const rt = localStorage.getItem("refresh_token");
+
     // Read initial values of localStorage
-    if (localStorage.getItem("access_token"))
-      setAccessToken(localStorage.getItem("access_token"));
-    if (localStorage.getItem("refresh_token"))
-      setRefreshToken(localStorage.getItem("refresh_token"));
+    if (at) setAccessToken(at);
+    if (rt) setRefreshToken(rt);
+
     const userString = localStorage.getItem("user");
     if (userString) setUser(JSON.parse(userString));
     setIsLoading(false);
@@ -66,10 +72,11 @@ export function UserProvider({ children }: React.PropsWithChildren) {
     const handleLocalStorageChanged = () => {
       // If any of the local storage items update, we update the context values
       // TODO: Setup axios to read from context, not directly from storage
-      if (localStorage.getItem("access_token") !== accessToken)
-        setAccessToken(localStorage.getItem("access_token"));
-      if (localStorage.getItem("refresh_token") !== refreshToken)
-        setRefreshToken(localStorage.getItem("refresh_token"));
+      const at = localStorage.getItem("access_token");
+      const rt = localStorage.getItem("refresh_token");
+
+      if (at !== accessToken) setAccessToken(at);
+      if (rt !== refreshToken) setRefreshToken(rt);
 
       const userString = localStorage.getItem("user");
       if (userString && JSON.parse(userString) !== user)
@@ -78,6 +85,7 @@ export function UserProvider({ children }: React.PropsWithChildren) {
     };
 
     const handleLocalStorageCleared = () => {
+      console.log("hi");
       if (!localStorage.getItem("access_token")) setAccessToken(null);
       if (!localStorage.getItem("refresh_token")) setRefreshToken(null);
       if (!localStorage.getItem("user")) setUser(defaultUser);
@@ -153,6 +161,24 @@ export function UserProvider({ children }: React.PropsWithChildren) {
     dispatchEvent(event);
   }, []);
 
+  const hasExpired = useCallback(async () => {
+    console.log(accessToken);
+    if (accessToken === null) {
+      return true;
+    }
+
+    try {
+      const token = JSON.parse(atob(accessToken.split(".")[1]));
+      if (token.exp * 1000 < Date.now()) {
+        return true;
+      }
+    } catch {
+      return true;
+    }
+
+    return false;
+  }, []);
+
   return (
     <UserContext.Provider
       value={{
@@ -163,6 +189,7 @@ export function UserProvider({ children }: React.PropsWithChildren) {
         login,
         register,
         logout,
+        hasExpired,
       }}
     >
       {children}

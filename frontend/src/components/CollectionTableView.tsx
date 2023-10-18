@@ -8,9 +8,7 @@ export default function CollectionTableView({
   // Generate the table dynamically using the columns and the values, for columns with optional
   // values, we simply replace with blanks if not present in current entry
   const columns = collection.columns;
-  const parsedContents = collection.entries.map((entry) =>
-    JSON.parse(entry.contents)
-  );
+  const contents = collection.entries.map((entry) => entry.contents);
 
   return (
     <div className="flex flex-col gap-y-4">
@@ -38,10 +36,10 @@ export default function CollectionTableView({
             </tr>
           </thead>
           <tbody>
-            {parsedContents.map((contents) => (
+            {contents.map((c) => (
               <tr>
                 {columns.map((col) => (
-                  <td>{contents[col]}</td>
+                  <td>{c[col]}</td>
                 ))}
               </tr>
             ))}

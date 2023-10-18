@@ -3,61 +3,34 @@ import { useNavigate, useParams } from "react-router-dom";
 import Layout, { LayoutTitle } from "../components/Layout";
 import Collection from "../models/collection";
 import CollectionTableView from "../components/CollectionTableView";
+import api from "../api/api";
 export default function CollectionPage() {
   const { collectionId } = useParams();
   const [collection, setCollection] = useState<Collection | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log(collectionId);
-    setCollection({
-      id: "1",
-      name: "Mentors",
-      entry_identifiers: ["First Name", "Last Name"],
-      project_id: "2",
-      columns: [
-        "First Name",
-        "Last Name",
-        "Telegram",
-        "Email",
-        "Email1",
-        "Email2",
-        "Email3",
-        "Email4",
-        "Email5",
-        "Email6",
-        "Email7",
-      ],
-      entries: [
-        {
-          id: "1",
-          contents: JSON.stringify({
-            "First Name": "John",
-            "Last Name": "Doe",
-            Telegram: "@dearjohn",
-            Email: "john@gmail.com",
-            Email1: "john@gmail.com",
-            Email2: "john@gmail.com",
-            Email3: "john@gmail.com",
-            Email4: "john@gmail.com",
-            Email5: "john@gmail.com",
-            Email6: "john@gmail.com",
-            Email7: "john@gmail.com",
-          }),
-          collection_id: "1",
-        },
-        {
-          id: "2",
-          contents: JSON.stringify({
-            "First Name": "Mary",
-            "Last Name": "Anne",
-            Telegram: "@annabanna",
-            Email: "mary@gmail.com",
-          }),
-          collection_id: "1",
-        },
-      ],
-    });
+    (async () => {
+      try {
+        const response = await api.get(`/collection/${collectionId}`);
+        if (response.status === 404) {
+          // Not found
+          navigate({
+            pathname: "/",
+            search: `?error=Collection ${collectionId} not found`,
+          });
+        } else if (response.status === 200) {
+          const collection = response.data as Collection;
+          console.log(response.data);
+          setCollection(collection);
+        }
+      } catch (e) {
+        navigate({
+          pathname: "/",
+          search: `?error=Invalid collection ${collectionId}`,
+        });
+      }
+    })();
   }, []);
 
   if (!collection) {
