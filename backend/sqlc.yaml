@@ -5,5 +5,5 @@ sql:
     schema: "migrations"
     gen:
       go:
-        package: "sql"
-        out: "sql"
+        package: "query"
+        out: "query"

@@ -6,13 +6,15 @@ import (
 	"github.com/woojiahao/notify.me/config"
 	"github.com/woojiahao/notify.me/forms"
 	"github.com/woojiahao/notify.me/models"
+	"github.com/woojiahao/notify.me/query"
+	"github.com/woojiahao/notify.me/services"
 	"net/http"
 	"time"
 )
 
 type UserController struct{}
 
-var userModel = new(models.User)
+var userService = new(services.UserService)
 
 func (u UserController) Register(c *gin.Context) {
 	var registerPayload forms.UserRegister
@@ -21,10 +23,10 @@ func (u UserController) Register(c *gin.Context) {
 		return
 	}
 
-	_, err := userModel.Register(registerPayload)
+	_, err := userService.Register(registerPayload)
 	if err != nil {
 		status := http.StatusInternalServerError
-		if err == models.RegistrationEmailUsed {
+		if err == services.RegistrationEmailUsed {
 			status = http.StatusBadRequest
 		}
 		SetStatusAndError(c, status, err)
@@ -41,8 +43,9 @@ func (u UserController) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := userModel.Login(loginPayload)
+	user, err := userService.Login(loginPayload)
 	if err != nil {
+		// TODO: Move error mapping directly to SetStatusAndError
 		status := http.StatusNotFound
 		if err == models.LoginFail {
 			status = http.StatusBadRequest
@@ -71,7 +74,7 @@ func (u UserController) Login(c *gin.Context) {
 	})
 }
 
-func createJwt(user *models.User, secret string, durationInS int) (string, error) {
+func createJwt(user *query.User, secret string, durationInS int) (string, error) {
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["exp"] = time.Now().Add(time.Duration(durationInS) * time.Second).Unix()
